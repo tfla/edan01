@@ -14,7 +14,7 @@ var 1..9: i;
 % only one of each weight
 constraint all_different([a,b,c,d,e,f,g,h,i]);
 
-% from drawing
+% constraints, using principle of lever
 constraint 2*a = b+2*c;
 constraint 2*d+e = f;
 constraint 2*g+h = 3*i;

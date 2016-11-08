@@ -53,5 +53,7 @@ output ["no. of beef = ", show(beef), "\n",
 				"no. of lettuce = ", show(lettuce), "\n",
 				"no. of ketchup = ", show(ketchup), "\n",
 				"no. of tomato = ", show(tomato), "\n",
-				"burger price: $", show(0.25*beef + 0.15*bun + 0.1*cheese + 0.09*onion + 0.03*pickle + 0.04*lettuce + 0.02*ketchup + 0.04*tomato), "\n"];
+				"burger price: $", show(0.25*beef + 0.15*bun +
+				0.1*cheese + 0.09*onion + 0.03*pickle + 
+				0.04*lettuce + 0.02*ketchup + 0.04*tomato), "\n"];
 
