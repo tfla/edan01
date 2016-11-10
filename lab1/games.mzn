@@ -20,7 +20,7 @@ constraint forall (i in 2..num) (minimum(tokens[i], [tokens[i-1] - visits[i-1] +
 % V_i less than or equal T_i ( AND V_i > 0 if noskip )
 constraint forall (i in 1..num) ((visits[i] <= tokens[i]));  %/\ (visits[i] > 0));
 
-% 0 < visits < 1
+% skip at most 1 game
 constraint at_most(1, visits, 0);
 
 % totalfun equals linear combination of visits and fun
