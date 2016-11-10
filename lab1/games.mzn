@@ -1,26 +1,33 @@
 % playing games at a block party in brooklyn
+include "globals.mzn";
 
+% params and vars
 int: num;
 int: cap;
 int: refill;
-array[0..num] of int: fun;
-array[0..num] of int: games;
-array[0..num] of int: tokens;
+array[int] of int: fun;
 
-constraint assert(num >= 0, "Invalid datafile: " ++
-									"Number of games is negative.");
-
-constraint assert(cap >= 0, "Invalid datafile: " ++
-									"Token capacity is negative.");
-
-constraint assert(refill >= 0, "Invalid datafile: " ++
-									"Token refill is negative.");
-
-constraint forall(i in 0..num-1)(games[i] <= tokens[i]);
-
-constraint forall(i in 0..num-1)(tokens[i-1] = tokens[i]+games[i-1]-refill);
-
-solve :: int_search(fun, first_fail, indomain_min, complete)
-			satisfy;
+array[1..num] of var 0..cap: tokens;
+array[1..num] of var 0..cap: visits;
 
 
+% at most cap tokens
+constraint tokens[1] = cap;
+
+% tokens = min(T_in = T_in-1 - V_in-1 + refill, cap)
+constraint forall (i in 2..num) (minimum(tokens[i], [tokens[i-1] - visits[i-1] + refill, cap]));
+			
+% V_i less than or equal T_i ( AND V_i > 0 if noskip )
+constraint forall (i in 1..num) ((visits[i] <= tokens[i]));  %/\ (visits[i] > 0));
+
+% 0 < visits < 1
+constraint at_most(1, visits, 0);
+
+% totalfun equals linear combination of visits and fun
+var int: totalfun = sum(i in 1..num) (visits[i]*fun[i]);
+
+% maximise totalfun
+solve maximize totalfun;
+
+% show totalfun
+output ["totalfun = ", show(totalfun)];
