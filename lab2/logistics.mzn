@@ -21,7 +21,7 @@ array[int] of int: cost;
 %		 | 0,  0, 3,  4,  0, 0,  0,
 %		 | 0,  0, 0,  0, 11, 0,  0 |];
 
-%array[1..graph_size,1..graph_size] of var int: graph;
+array[1..graph_size,1..graph_size] of var int: graph;
 
 % constraints
 
@@ -36,16 +36,24 @@ array[int] of int: cost;
 constraint forall(i in 1..n_dests)(from[graph_size+1] = dest[i] /\ to[graph_size+1] = start);
 
 % change domain of end node to only `start', maybe like this...
-constraint forall(i in 1..n_dests)(forall(j in 1..graph_size)(if from[j] = dest[i] /\ to[j] != start then  from[j] = 0 /\ to[j] = 0 endif));
+constraint forall(i in 1..n_dests)(forall(j in 1..graph_size)(if from[j] = dest[i] /\ to[j] != start then from[j] = 0 /\ to[j] = 0 else true endif));
 
 % remove start from start-domain
-constraint forall(i in 1..graph_size)(if to[i] = start /\ from[i] = start then to[i] = 0 /\ from [i] = 0 endif);
+constraint forall(i in 1..graph_size)(if to[i] = start /\ from[i] = start then to[i] = 0 /\ from [i] = 0 else true endif);
+
+% value-graph:
+array[1..graph_size,1..graph_size] of var int: v;
+
+%v[i,x[i]] = d[i]
+constraint forall(i in 1..graph_size)(v[to[i],from[i]] = cost[i]);
 
 % subcircuit(1-5) will find all paths, we then need to pick the cheapest.
 %constraint subcircuit.... somehow...
+%constraint subcircuit(v);
 
 % element constraint to see cost
-% element(l,[1,2,3],V)
+% element(l,[1,2,3],V) means V = List[I]
+%constraint forall(1 in 1..)(element(1,[],v));
 %constraint subgraph = something;
 
 % if from[i] == start: go to cheapest
@@ -62,4 +70,7 @@ solve maximize graph_size;
 
 %output["This is the output: ", show(subgraph)];
 output["graph =", show(graph), "\n",
-			 "test  =", show(t), "\n"];
+			 "dest  =", show(dest), "\n",
+			 "to    =", show(to), "\n",
+			 "from  =", show(from), "\n",
+			 "v     =", show(v), "\n"];
