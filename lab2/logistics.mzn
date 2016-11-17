@@ -13,39 +13,37 @@ array[int] of int: cost;
 
 % decision variables
 
-%array[int,int] of int: t;
-%t = [| 0,  4, 2,  0,  0, 0,  0,
-%		 | 4,  0, 5, 10,  0, 0,  0,
-%		 | 2,  5, 0,  0,  3, 0,  0,
-%		 | 0, 10, 0,  0,  0, 4, 11,
-%		 | 0,  0, 3,  4,  0, 0,  0,
-%		 | 0,  0, 0,  0, 11, 0,  0 |];
-
-array[1..graph_size,1..graph_size] of var int: graph;
+array[1..n_dests,1..graph_size] of var set of int: next;
 
 % constraints
 
-% if start[i,j] > 0 then puzzle[i,j] = start[i,j] else	true	endif
-% 
-%%constraint forall(i in 1..graph_size)(forall(j in 1..graph_size)( graph[i,j] = cost[i]) ); 
-%%constraint forall(i in 1..graph_size)(forall(j in 1..graph_size)(if to[i] = from[j] then graph[i,j] = cost[i] else true endif));
+constraint forall(j in 1..n_dests, i in 1..graph_size)(
+	next[j,i] =
+	{to[x]   | x in 1..n_edges    where from[x] == i}
+	union
+	{from[x] | x in 1..n_edges    where (to[x] == i /\ to[x] != dest[j])}
+	union
+	{x       | x in 1..graph_size where (x == i /\ x != start /\ x != dest[j])}
+	union
+	{start   | x in 1..n_dests    where dest[x] == i }
+);
 
-%array[1..graph_size] of var 0..graph_size: subgraph;
+%constraint next[dest[1]] = {start};
 
 % add edge from end to start... (add `dest[i]' to `from' and `start' to `to' for all i in `n_dest')
-constraint forall(i in 1..n_dests)(from[graph_size+1] = dest[i] /\ to[graph_size+1] = start);
+%%constraint forall(i in 1..n_dests)(from[graph_size+1] = dest[i] /\ to[graph_size+1] = start);
 
 % change domain of end node to only `start', maybe like this...
-constraint forall(i in 1..n_dests)(forall(j in 1..graph_size)(if from[j] = dest[i] /\ to[j] != start then from[j] = 0 /\ to[j] = 0 else true endif));
+%%constraint forall(i in 1..n_dests)(forall(j in 1..graph_size)(if from[j] = dest[i] /\ to[j] != start then from[j] = 0 /\ to[j] = 0 else true endif));
 
 % remove start from start-domain
-constraint forall(i in 1..graph_size)(if to[i] = start /\ from[i] = start then to[i] = 0 /\ from [i] = 0 else true endif);
+%%constraint forall(i in 1..graph_size)(if to[i] = start /\ from[i] = start then to[i] = 0 /\ from [i] = 0 else true endif);
 
 % value-graph:
-array[1..graph_size,1..graph_size] of var int: v;
+%array[1..graph_size*graph_size] of var int: v;
 
 %v[i,x[i]] = d[i]
-constraint forall(i in 1..graph_size)(v[to[i],from[i]] = cost[i]);
+%constraint forall(i in 1..graph_size)(v[to[i],from[i]] = cost[i]);
 
 % subcircuit(1-5) will find all paths, we then need to pick the cheapest.
 %constraint subcircuit.... somehow...
@@ -69,8 +67,4 @@ solve maximize graph_size;
 % output
 
 %output["This is the output: ", show(subgraph)];
-output["graph =", show(graph), "\n",
-			 "dest  =", show(dest), "\n",
-			 "to    =", show(to), "\n",
-			 "from  =", show(from), "\n",
-			 "v     =", show(v), "\n"];
+output["next     =", show(next), "\n"];
