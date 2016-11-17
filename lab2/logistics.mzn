@@ -1,4 +1,6 @@
 % finding the cheapest subgraph from start to dest in a graph
+include "globals.mzn";
+
 
 % parameters
 
@@ -30,44 +32,32 @@ constraint forall(j in 1..n_dests, i in 1..graph_size)(
 
 array[1..n_dests, 1..graph_size] of var int: flatnext;
 
-constraint forall(i in 1..n_dests, j in 1..graph_size)(flatnext[i,j] in next[i,j]);
+constraint forall(i in 1..n_dests, j in 1..graph_size) (flatnext[i,j] in next[i,j]);
 
-constraint forall(i in 1..n_dests)(subcircuit([flatnext[i,j] | j in 1..graph_size]));
+constraint forall (i in 1..n_dests) (subcircuit([flatnext[i,j] | j in 1..graph_size]));
 
-constraint element();
+array[1..graph_size,1..graph_size] of var 0..1000: distance;
 
-% value-graph:
-%array[1..graph_size*graph_size] of var int: v;
+constraint forall(i in 1..graph_size)(distance[from[i],to[i]] = cost[i]);
 
-%v[i,x[i]] = d[i]
-%constraint forall(i in 1..graph_size)(v[to[i],from[i]] = cost[i]);
+constraint forall(i in 1..graph_size)(distance[to[i],from[i]] = cost[i]);
 
-% subcircuit(1-5) will find all paths, we then need to pick the cheapest.
-%constraint subcircuit.... somehow...
-%constraint subcircuit(v);
+solve satisfy; %actually supposed to minimize the cost or whatever
 
-% element constraint to see cost
-% element(l,[1,2,3],V) means V = List[I]
-%constraint forall(1 in 1..)(element(1,[],v));
-%constraint subgraph = something;
+var int: totalcost;
+array[1..n_dests] of var int: sub_cost;
 
-% if from[i] == start: go to cheapest
-%constraint forall(i in n_dests)()
+constraint forall(i in 1..n_dests)(
+	sub_cost[i] = sum(j in 1..graph_size)(distance[j,flatnext[i,j]])
+);
 
-% cost = sum of costs for subgraph
-%var int: totalcost = sum(i in 1..subgraph_size)(subgraph[i]);
-
-
-% solve
-
-%solve maximize graph_size;
-
-%solve :: set_search(flatnext, first_fail, indomain_min, complete) satisfy;
-
-solve satisfy;
+constraint totalcost = sum(j in 1..n_dests)(sub_cost[j]);
 
 % output
 
 %output["This is the output: ", show(subgraph)];
 output["next     = ", show(next), "\n",
-			 "flatnext = ", show(flatnext), "\n"];
+			 "flatnext = ", show(flatnext), "\n",
+			 "distance = ", show(distance), "\n",
+			 "sub_cost = ", show(sub_cost), "\n",
+			 "totalcost = ", show(totalcost), "\n"];
