@@ -19,25 +19,22 @@ array[1..n_dests,1..graph_size] of var set of int: next;
 
 constraint forall(j in 1..n_dests, i in 1..graph_size)(
 	next[j,i] =
-	{to[x]   | x in 1..n_edges    where from[x] == i}
+	{to[x]   | x in 1..n_edges    where (from[x] == i /\ from[x] != dest[j])}
 	union
 	{from[x] | x in 1..n_edges    where (to[x] == i /\ to[x] != dest[j])}
 	union
 	{x       | x in 1..graph_size where (x == i /\ x != start /\ x != dest[j])}
 	union
-	{start   | x in 1..n_dests    where dest[x] == i }
+	{start   | x in 1..n_dests    where (dest[j] == i)}
 );
 
-%constraint next[dest[1]] = {start};
+array[1..n_dests, 1..graph_size] of var int: flatnext;
 
-% add edge from end to start... (add `dest[i]' to `from' and `start' to `to' for all i in `n_dest')
-%%constraint forall(i in 1..n_dests)(from[graph_size+1] = dest[i] /\ to[graph_size+1] = start);
+constraint forall(i in 1..n_dests, j in 1..graph_size)(flatnext[i,j] in next[i,j]);
 
-% change domain of end node to only `start', maybe like this...
-%%constraint forall(i in 1..n_dests)(forall(j in 1..graph_size)(if from[j] = dest[i] /\ to[j] != start then from[j] = 0 /\ to[j] = 0 else true endif));
+constraint forall(i in 1..n_dests)(subcircuit([flatnext[i,j] | j in 1..graph_size]));
 
-% remove start from start-domain
-%%constraint forall(i in 1..graph_size)(if to[i] = start /\ from[i] = start then to[i] = 0 /\ from [i] = 0 else true endif);
+constraint element();
 
 % value-graph:
 %array[1..graph_size*graph_size] of var int: v;
@@ -60,11 +57,17 @@ constraint forall(j in 1..n_dests, i in 1..graph_size)(
 % cost = sum of costs for subgraph
 %var int: totalcost = sum(i in 1..subgraph_size)(subgraph[i]);
 
+
 % solve
 
-solve maximize graph_size;
+%solve maximize graph_size;
+
+%solve :: set_search(flatnext, first_fail, indomain_min, complete) satisfy;
+
+solve satisfy;
 
 % output
 
 %output["This is the output: ", show(subgraph)];
-output["next     =", show(next), "\n"];
+output["next     = ", show(next), "\n",
+			 "flatnext = ", show(flatnext), "\n"];
