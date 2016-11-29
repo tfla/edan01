@@ -31,7 +31,7 @@
 
 import org.jacop.constraints.Not;
 import org.jacop.constraints.PrimitiveConstraint;
-import org.jacop.constraints.XeqC;
+import org.jacop.constraints.XgteqC;
 import org.jacop.core.FailException;
 import org.jacop.core.IntDomain;
 import org.jacop.core.IntVar;
@@ -44,7 +44,7 @@ import org.jacop.core.Store;
  * @version 4.1
  */
 
-public class SimpleDFS  {
+public class SS2  {
 
     boolean trace = false;
 
@@ -73,17 +73,17 @@ public class SimpleDFS  {
      */
     public IntVar costVariable = null;
 
-    /**
-     * 
+    /*
+     * Visited nodes
      */
     int visited = 0;
 
-    /**
-     *
+    /*
+     * Erroneous visits
      */
-    int wrongs = 0; 
+    int wrongs = 0;
 
-    public SimpleDFS(Store s) {
+    public SS2(Store s) {
 	store = s;
     }
 
@@ -121,7 +121,7 @@ public class SimpleDFS  {
 	if (!consistent) {
 	    // Failed leaf of the search tree
 	    wrongs++;
-            return false;
+	    return false;
 	} else { // consistent
 
 	    if (vars.length == 0) {
@@ -221,12 +221,17 @@ public class SimpleDFS  {
 	 */ 
 	IntVar selectVariable(IntVar[] v) {
 	    if (v.length != 0) {
-
-		searchVariables = new IntVar[v.length-1];
-		for (int i = 0; i < v.length-1; i++) {
-		    searchVariables[i] = v[i+1]; 
+		if (v[0].min() == v[0].max()) {
+			searchVariables = new IntVar[v.length-1];
+			for (int i = 0; i < v.length-1; i++) {
+				searchVariables[i] = v[i+1]; 
+			}
+		} else {
+			searchVariables = new IntVar[v.length];
+			for (int i = 0; i < v.length; i++) {
+				searchVariables[i] = v[i]; 
+			}
 		}
-
 		return v[0];
 
 	    }
@@ -240,14 +245,14 @@ public class SimpleDFS  {
 	 * example value selection; indomain_min
 	 */ 
 	int selectValue(IntVar v) {
-	    return v.min();
+	    return ((v.max()+v.min())%2==0)? ((v.max()+v.min())/2) : ((v.max()+v.min()+1)/2) ;
 	}
 
 	/**
 	 * example constraint assigning a selected value
 	 */
 	public PrimitiveConstraint getConstraint() {
-	    return new XeqC(var, value);
+	    return new XgteqC(var, value);
 	}
     }
 }

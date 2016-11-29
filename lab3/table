@@ -1,0 +1,5 @@
+    | Nodes visited: | Erroneous visits: |
+DFS | 32059          | 15994             |
+SS1 | 41847          | 20872             |
+SS2 | 701141         | 350390            |
+VSM | 54307          | 27144             |

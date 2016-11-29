@@ -169,12 +169,18 @@ public class Golomb {
 
 	IntVar cost = numbers[numbers.length - 1];
 
-	SimpleDFS search = new SimpleDFS(store);
+	//SimpleDFS search = new SimpleDFS(store);
+	//SS1 search = new SS1(store);
+	//SS2 search = new SS2(store);
+	VSM search = new VSM(store);
 	search.setVariablesToReport(numbers);
 	search.setCostVariable(cost);
 
 	boolean result = search.label(numbers);
 	
+	System.out.println("Nodes visited: " + search.visited);
+	System.out.println("Erroneous visits: " + search.wrongs);
+
 	System.out.println (result);
 
     }

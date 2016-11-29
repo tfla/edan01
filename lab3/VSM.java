@@ -44,7 +44,7 @@ import org.jacop.core.Store;
  * @version 4.1
  */
 
-public class SimpleDFS  {
+public class VSM  {
 
     boolean trace = false;
 
@@ -73,17 +73,17 @@ public class SimpleDFS  {
      */
     public IntVar costVariable = null;
 
-    /**
-     * 
+    /*
+     * Visited nodes
      */
     int visited = 0;
 
-    /**
-     *
+    /*
+     * Erroneous visits
      */
-    int wrongs = 0; 
+    int wrongs = 0;
 
-    public SimpleDFS(Store s) {
+    public VSM(Store s) {
 	store = s;
     }
 
@@ -121,7 +121,7 @@ public class SimpleDFS  {
 	if (!consistent) {
 	    // Failed leaf of the search tree
 	    wrongs++;
-            return false;
+	    return false;
 	} else { // consistent
 
 	    if (vars.length == 0) {
@@ -217,30 +217,43 @@ public class SimpleDFS  {
 	}
 
 	/**
-	 * example variable selection; input order
+	 * example variable selection; small interval first
 	 */ 
 	IntVar selectVariable(IntVar[] v) {
-	    if (v.length != 0) {
+		int low = 0;
+		int dom = Integer.MAX_VALUE;
 
-		searchVariables = new IntVar[v.length-1];
-		for (int i = 0; i < v.length-1; i++) {
-		    searchVariables[i] = v[i+1]; 
+		for (int i = 0; i < v.length; i++) {
+			int thisdom = v[i].max()-v[i].min();
+			if(thisdom < dom) {
+				low = i;
+				dom = thisdom;
+			}
 		}
-
-		return v[0];
-
-	    }
-	    else {
-		System.err.println("Zero length list of variables for labeling");
-		return new IntVar(store);
-	    }
+		if (v.length != 0) {
+			searchVariables = new IntVar[v.length-1];
+			int j = 0;
+			for (int i = 0; i < v.length-1; i++) {
+				if (low == j) {
+					j++;
+					i--;
+				} else {
+					searchVariables[i] = v[j++];
+				}
+			}
+			return v[low];
+		}
+		else {
+			System.err.println("Zero length list of variables for labeling");
+			return new IntVar(store);
+		}
 	}
 
 	/**
 	 * example value selection; indomain_min
 	 */ 
 	int selectValue(IntVar v) {
-	    return v.min();
+		return v.min();
 	}
 
 	/**
